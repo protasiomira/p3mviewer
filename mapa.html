@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>P3M Viewer</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+html, body {
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+}
+
+#map {
+    width:100%;
+    height:100%;
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const processo = params.get("processo");
+
+const map = L.map('map').setView([-15,-55],4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'OpenStreetMap'
+}).addTo(map);
+
+const url =
+`https://opendata.sgb.gov.br/geoserver/p3m/ows?
+service=WFS&
+version=1.0.0&
+request=GetFeature&
+typeName=p3m:mvw_processos_minerarios_ativos&
+outputFormat=application/json&
+CQL_FILTER=ds_processo='${processo}'`;
+
+fetch(url.replace(/\n/g,''))
+.then(r => r.json())
+.then(data => {
+
+    const layer = L.geoJSON(data,{
+        style:{
+            color:'#ff0000',
+            weight:3
+        },
+        onEachFeature:(feature,layer)=>{
+
+            const p = feature.properties;
+
+            layer.bindPopup(`
+                <b>Processo:</b> ${p.ds_processo}<br>
+                <b>Substância:</b> ${p.nm_substancia}<br>
+                <b>Empresa:</b> ${p.nm_pessoa}<br>
+                <b>Fase:</b> ${p.ds_fase_processo}<br>
+                <b>Município:</b> ${p.nm_mun}/${p.sigla_uf}<br>
+                <b>Área:</b> ${p.qt_area} ha
+            `).openPopup();
+        }
+    }).addTo(map);
+
+    map.fitBounds(layer.getBounds());
+
+});
+
+</script>
+
+</body>
+</html>
