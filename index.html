@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="utf-8" />
 <title>P3M Viewer Teste</title>
@@ -7,44 +8,204 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
+
 html, body {
+
     margin:0;
     padding:0;
+
     width:100%;
     height:100%;
+
     font-family: Arial, sans-serif;
 }
 
 #map {
+
     width:100%;
     height:100%;
 }
 
-/* Rodapé de créditos */
+/* =========================
+   CRÉDITOS INFERIORES
+========================= */
+
 #credits {
+
     position:absolute;
+
     bottom:5px;
     left:50%;
+
     transform:translateX(-50%);
+
     z-index:1000;
 
-    background:rgba(255,255,255,0.9);
+    background:rgba(255,255,255,0.92);
+
     padding:6px 10px;
 
     border-radius:6px;
+
     font-size:11px;
 
-    box-shadow:0 1px 4px rgba(0,0,0,0.2);
+    box-shadow:0 1px 4px rgba(0,0,0,0.25);
 }
 
-#credits a{
+#credits a {
+
     color:#0066cc;
+
     text-decoration:none;
 }
 
-#credits a:hover{
+#credits a:hover {
+
     text-decoration:underline;
 }
+
+/* =========================
+   BRANDING SGB
+========================= */
+
+#branding {
+
+    position:absolute;
+
+    top:10px;
+    right:10px;
+
+    z-index:1000;
+
+    background:rgba(255,255,255,0.9);
+
+    padding:6px 8px;
+
+    border-radius:8px;
+
+    box-shadow:0 1px 5px rgba(0,0,0,0.25);
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;
+
+    max-width:170px;
+}
+
+#branding img {
+
+    width:120px;
+
+    height:auto;
+
+    margin-bottom:4px;
+}
+
+#branding-text {
+
+    font-size:10px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    color:#003366;
+
+    line-height:1.2;
+}
+
+/* =========================
+   SISTEMA DE COORDENADAS
+========================= */
+
+#crs-info {
+
+    position:absolute;
+
+    bottom:12px;
+    left:10px;
+
+    z-index:1000;
+
+    background:rgba(255,255,255,0.92);
+
+    padding:4px 8px;
+
+    border-radius:6px;
+
+    font-size:10px;
+
+    color:#222;
+
+    box-shadow:0 1px 4px rgba(0,0,0,0.25);
+}
+
+/* =========================
+   SETA NORTE
+========================= */
+
+#north-arrow {
+
+    position:absolute;
+
+    bottom:95px;
+    left:10px;
+
+    z-index:1000;
+
+    background:rgba(255,255,255,0.9);
+
+    padding:5px;
+
+    border-radius:8px;
+
+    box-shadow:0 1px 5px rgba(0,0,0,0.25);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#north-arrow img {
+
+    width:42px;
+
+    height:auto;
+
+    display:block;
+}
+
+/* =========================
+   ESCALA MAIS VISÍVEL
+========================= */
+
+.leaflet-control-scale {
+
+    margin-left:10px !important;
+
+    margin-bottom:38px !important;
+}
+
+.leaflet-control-scale-line {
+
+    background:rgba(255,255,255,0.95) !important;
+
+    border:2px solid #222 !important;
+
+    border-top:none !important;
+
+    color:#111 !important;
+
+    font-weight:bold;
+
+    font-size:11px;
+
+    padding:2px 6px;
+
+    box-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+
 </style>
 </head>
 
@@ -52,24 +213,71 @@ html, body {
 
 <div id="map"></div>
 
+<!-- =========================
+     SETA NORTE
+========================= -->
+
+<div id="north-arrow">
+
+    <img src="seta_norte_sem_fundo.png" alt="Seta Norte">
+
+</div>
+
+<!-- =========================
+     BRANDING
+========================= -->
+
+<div id="branding">
+
+    <img src="SGB_Logo_sem_fundo.png" alt="SGB Logo">
+
+    <div id="branding-text">
+        Divisão Economia Mineral e Geologia Exploratória – DIEMGE
+    </div>
+
+</div>
+
+<!-- =========================
+     CRÉDITOS
+========================= -->
+
 <div id="credits">
+
     Dados geográficos:
+
     <a href="https://p3mgeo.sgb.gov.br/" target="_blank">
-    P3M/SGB
-</a>
+        P3M/SGB
+    </a>
+
     • Base cartográfica:
+
     <a href="https://www.openstreetmap.org/" target="_blank">
         OpenStreetMap
     </a>
+
     • Visualização:
+
     <a href="https://leafletjs.com/" target="_blank">
         Leaflet
     </a>
+
+</div>
+
+<!-- =========================
+     SISTEMA DE COORDENADAS
+========================= -->
+
+<div id="crs-info">
+    SRC: WGS 84 / Pseudo-Mercator (EPSG:3857)
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
+
+/* =========================
+   LER PARÂMETRO DA URL
+========================= */
 
 const params = new URLSearchParams(window.location.search);
 
@@ -77,28 +285,79 @@ const processo = (params.get("processo") || "")
     .trim()
     .replace(/\s+/g,'');
 
+/* =========================
+   CRIAR MAPA
+========================= */
+
 const map = L.map('map').setView([-15,-55],4);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+/* =========================
+   BASE CARTOGRÁFICA
+========================= */
+
+L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
     attribution:'© OpenStreetMap'
 }).addTo(map);
 
-const url = new URL("https://opendata.sgb.gov.br/geoserver/p3m/ows");
+/* =========================
+   ESCALA
+========================= */
+
+L.control.scale({
+
+    metric:true,
+
+    imperial:false
+
+}).addTo(map);
+
+/* =========================
+   URL GEOSERVER P3M
+========================= */
+
+const url = new URL(
+    "https://opendata.sgb.gov.br/geoserver/p3m/ows"
+);
 
 url.searchParams.set("service", "WFS");
+
 url.searchParams.set("version", "1.0.0");
+
 url.searchParams.set("request", "GetFeature");
-url.searchParams.set("typeName", "p3m:mvw_processos_minerarios_ativos");
-url.searchParams.set("outputFormat", "application/json");
-url.searchParams.set("CQL_FILTER", `ds_processo='${processo}'`);
+
+url.searchParams.set(
+    "typeName",
+    "p3m:mvw_processos_minerarios_ativos"
+);
+
+url.searchParams.set(
+    "outputFormat",
+    "application/json"
+);
+
+url.searchParams.set(
+    "CQL_FILTER",
+    `ds_processo='${processo}'`
+);
+
+/* =========================
+   CONSULTAR DADOS
+========================= */
 
 fetch(url)
+
 .then(r => r.json())
+
 .then(data => {
 
     const layer = L.geoJSON(data,{
+
         style:{
+
             color:'#ff0000',
+
             weight:3
         },
 
@@ -107,23 +366,38 @@ fetch(url)
             const p = feature.properties;
 
             layer.bindPopup(`
+
                 <b>Processo:</b> ${p.ds_processo}<br>
+
                 <b>Substância:</b> ${p.nm_substancia}<br>
+
                 <b>Empresa:</b> ${p.nm_pessoa}<br>
+
                 <b>Fase:</b> ${p.ds_fase_processo}<br>
+
                 <b>Município:</b> ${p.nm_mun}/${p.sigla_uf}<br>
+
                 <b>Área:</b> ${p.qt_area} ha
+
             `);
         }
+
     }).addTo(map);
+
+    /* =========================
+       AJUSTAR ENQUADRAMENTO
+    ========================= */
 
     map.fitBounds(layer.getBounds());
 
 })
+
 .catch(err => {
+
     console.error(err);
 
     alert("Erro ao carregar dados do processo.");
+
 });
 
 </script>
